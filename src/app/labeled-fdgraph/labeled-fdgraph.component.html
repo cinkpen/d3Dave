@@ -1,2 +1,46 @@
-SVG:
-<svg width="960" height="600"></svg>
+<svg class="card-shadow" width="960" height="600"></svg>
+
+<br>
+<br>
+<div class="wrapper">
+  <!-- <div class="card-shadow padded-inline">
+    <button (click)="setFirebaseTest(newData)">Set test data into firebase:</button>
+
+    <input type="text" (change)="newData = $event.target.value">
+
+    <div *ngFor="let data of (getFirebaseTest() | async)"> {{ data.testData | json}}</div>
+    <br>
+    <button (click)="destroyTestData()">Destroy data</button>
+  </div> -->
+  <div class="left-controls" style="float: left; width: 35%; ">
+    <div class="card-shadow padded-inline">
+      <button class="submit" (click)="sendnewGraphNode()">Submit to firebase graph:</button>
+      <input type="text" [(ngModel)]="newGraphNode">
+      <br>
+      <button class="preset" (click)="setPreset1()">Preset Node 1</button>
+      <button class="preset" (click)="setPreset2()">Preset Node 2</button>
+      <button class="preset" (click)="setPreset3()">Preset Node 3</button>
+      <br>
+      <button class="destroy" (click)="destroyGraphData()">Destroy all data</button>
+    </div>
+
+    <div class="card-shadow padded-inline">
+      <button class="submit" (click)="sendnewGraphLink()">Submit to firebase graph:</button>
+      <input type="text" [(ngModel)]="newGraphLink">
+      <br>
+      <button class="preset" (click)="setLink1()">Preset Link 1</button>
+      <button class="preset" (click)="setLink2()">Preset Link 2</button>
+      <button class="preset" (click)="setLink3()">Preset Link 3</button>
+      <br>
+      <button class="destroy" (click)="destroyGraphData()">Destroy all data</button>
+    </div>
+  </div>
+
+  <div class="right-controls" style="float: left; width: 65%;">
+    <div class="card-shadow padded-inline" style="text-align: left;">
+      <pre>
+    {{ getGraphData() | async | json}}
+    </pre>
+    </div>
+  </div>
+</div>

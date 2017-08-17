@@ -1,5 +1,6 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import * as d3 from 'd3';
+import { AngularFireDatabase, FirebaseListObservable } from 'angularfire2/database';
 
 @Component({
   selector: 'app-labeled-fdgraph',
@@ -21,11 +22,140 @@ export class LabeledFDGraphComponent implements OnInit {
 
   graph;
 
-  constructor() { }
+  // Test observable
+  updatingTest: FirebaseListObservable<any[]>;
+
+  // Live observable
+  graphData: FirebaseListObservable<any[]>;
+  nodeData: FirebaseListObservable<any[]>;
+  linkData: FirebaseListObservable<any[]>;
+  newGraphNode;
+  newGraphLink;
+
+  constructor(private db: AngularFireDatabase) {
+    // this.updatingTest = db.list('/test');
+    this.graphData = db.list('/graph');
+    this.nodeData = db.list("/graph/nodes")
+    this.linkData = db.list("/graph/links")
+    // this.davesObs = this.graphData.
+
+  }
 
   ngOnInit() {
     this.runD3();
+    // this.logTestUpdates();
+    this.logUpdates();
   }
+
+
+  // // Test implementation
+  // setFirebaseTest(data) {
+  //   console.log("Setting: ", data)
+  //   this.updatingTest.set('/graph', { testData: data })
+  // }
+  // getFirebaseTest() {
+  //   return this.updatingTest;
+  // }
+  // logTestUpdates() {
+  //   this.getFirebaseTest().subscribe(data => console.log("Testdata: ", data))
+  // }
+  // destroyTestData(){
+  //   this.getFirebaseTest().remove();
+  // }
+
+
+
+
+  setPreset1() {
+    this.newGraphNode = `
+    {
+    "name": "Peter",
+    "label": "Person",
+    "id": 1
+  }`
+  }
+  setPreset2() {
+    this.newGraphNode = `
+    {
+    "name": "Michael",
+    "label": "Person",
+    "id": 2
+  }`
+  }
+  setPreset3() {
+    this.newGraphNode = `
+    {
+    "name": "Neo4j",
+    "label": "Database",
+    "id": 3
+  }`
+  }
+
+
+  setLink1() {
+    this.newGraphLink = `
+    {
+      "source": 1,
+      "target": 2,
+      "type": "FOUNDED"
+    }
+  `
+  }
+  setLink2() {
+    this.newGraphLink = `
+    {
+      "source": 2,
+      "target": 3,
+      "type": "KNOWS"
+    }
+  `
+  }
+  setLink3() {
+    this.newGraphLink = `
+    {
+      "source": 3,
+      "target": 1,
+      "type": "WORKS_ON"
+    }
+  `
+  }
+
+  sendnewGraphNode() {
+    console.log("Sending node to firebase: ", this.newGraphNode)
+    // console.log("Sending to firebase: ", JSON.parse(this.newGraphNode))
+    this.db.list("/graph/nodes").push(JSON.parse(this.newGraphNode));
+    this.newGraphNode = "";
+  }
+  sendnewGraphLink() {
+    console.log("Sending link to firebase: ", this.newGraphLink)
+    // console.log("Sending to firebase: ", JSON.parse(this.newGraphNode))
+    this.db.list("/graph/links").push(JSON.parse(this.newGraphLink));
+    this.newGraphLink = "";
+  }
+
+  destroyGraphData() {
+    this.graphData.remove();
+  }
+
+  getGraphData() {
+    return this.graphData;
+  }
+
+  getNodeData() {
+    return this.nodeData; 
+  }
+
+  getLinkData() {
+    return this.linkData; 
+  }
+
+  logUpdates() {
+    this.getGraphData().subscribe((data:any) => console.log("Logging Graph update: ", JSON.stringify(data)))
+    this.getNodeData().subscribe((data: any) => console.log("Logging node update: ", data))
+    this.getLinkData().subscribe((data: any) => console.log("Logging link update: ", data))
+  }
+
+
 
   runD3() {
     this.colors = d3.scaleOrdinal(d3.schemeCategory10);
@@ -54,17 +184,21 @@ export class LabeledFDGraphComponent implements OnInit {
       .force("center", d3.forceCenter(this.width / 2, this.height / 2))
       .alphaTarget(0.1)
 
-    d3.json("./assets/graph.json", (error, graph) => {
-      if (error) throw error;
-      this.graph = graph;
-      this.update(graph.links, graph.nodes);
-    })
+    // Old static data
+    // d3.json("./assets/graph.json", (error, graph) => {
+    //   if (error) throw error;
+    //   this.graph = graph;
+    //   this.update(graph.links, graph.nodes);
+    // })
 
+    // this.getGraphData().subscribe(graph => {this.graph = graph; console.log("Updating with new graph: ",graph); this.update([], graph)})
+    this.getNodeData().subscribe(nodes => {this.update([], nodes); })
+    this.getLinkData().subscribe(links => {this.update(links, [])});
   }
 
   ticked() {
 
-    let graphNodes = this.graph.nodes;
+    // let graphNodes = this.graph.nodes;
     // console.log("TICKED", graphNodes)
     this.link
       .attr("x1", (d) => { return d.source.x; })
